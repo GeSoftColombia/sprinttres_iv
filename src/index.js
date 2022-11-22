@@ -6,6 +6,8 @@ const categoriaRouter = require('./routes/categoriaController');
 const productoRouter = require('./routes/productoController');
 const userRouter = require('./routes/userController');
 const authRouter = require('./routes/authController');
+const tokenvalidation = require('./middleware/auth');
+const { env } = require('process');
 
 require ('dotenv').config();
 
@@ -14,14 +16,15 @@ app.use(cors());
 //Configuramos Express como Json Data
 app.use(express.json());
 //Ruta Inicial
-app.get('/', (req, res)=> {
-    res.send("Servidor funcionando...")
+app.get('/', tokenvalidation, (req, res)=> {
+    res.send("Servidor funcionando version..." + process.env.VERSION);
 })
 //Demás Rutas de los Controladores
-app.use('/api',categoriaRouter);
-app.use('/api',productoRouter);
-app.use('/api',userRouter);
 app.use('/api',authRouter);
+app.use('/api',tokenvalidation,categoriaRouter);
+app.use('/api',tokenvalidation,productoRouter);
+app.use('/api',tokenvalidation,userRouter);
+
 
 //Configuramos la carpeta pública del servidor
 app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images')))
@@ -32,7 +35,6 @@ app.use('/images', express.static(path.join(__dirname, '..', 'public', 'images')
 // }).catch((error)=>{
 //     console.log("database connect error: " + error)
 // })
-
 
 //Conexión Local - Localhost
 mongoose.connect(process.env.databaseUrlLocal).then(()=>{
